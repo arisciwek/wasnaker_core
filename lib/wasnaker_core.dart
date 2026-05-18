@@ -5,3 +5,7 @@ export 'src/modules/wasnaker_module.dart';
 export 'src/networking/wasnaker_api_service.dart';
 export 'src/widgets/adaptive_layout.dart';
 export 'src/navigation/wasnaker_navigation_hub.dart';
+export 'src/dashboard/dashboard_stat_widget.dart';
+export 'src/dashboard/dashboard_nav_item.dart';
+export 'src/dashboard/dashboard_registry.dart';
+export 'src/dashboard/dashboard_page.dart';

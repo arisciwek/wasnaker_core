@@ -2,32 +2,35 @@ import 'package:flutter/material.dart';
 import 'package:nylo_framework/nylo_framework.dart';
 import '../widgets/adaptive_layout.dart';
 
-/// Abstract base for all Wasnaker actor app hub pages.
+/// Base State class for all Wasnaker adaptive navigation hubs.
 ///
-/// Extend this instead of [NavigationHub] to get adaptive layout automatically:
-/// - **Mobile** (narrow): [NavigationHubLayout.bottomNav]
-/// - **Web** (≥ 1024px): [NavigationHubLayout.topNav]
+/// Overrides [layout] to return [NavigationHubLayout.bottomNav] on mobile
+/// and [NavigationHubLayout.topNav] on web (kIsWeb || width >= 1024).
 ///
-/// Usage:
+/// Usage — create two classes in your actor app:
 /// ```dart
-/// class DashboardPage extends WasnakerNavigationHub<DashboardPage> {
+/// class DashboardPage extends NyStatefulWidget with BottomNavPageControls {
 ///   static RouteView path = ("/dashboard", (_) => DashboardPage());
+///   DashboardPage({super.key})
+///       : super(child: () => _DashboardPageState(), stateName: path.stateName());
+///   static NavigationHubStateActions stateActions =
+///       NavigationHubStateActions(path.stateName());
+/// }
 ///
-///   DashboardPage() : super(() => {
-///     0: NavigationTab(title: 'Home',        page: HomeTab(),        icon: Icon(Icons.home_outlined)),
-///     1: NavigationTab(title: 'Inspections', page: InspectionsTab(), icon: Icon(Icons.search_outlined)),
+/// class _DashboardPageState extends WasnakerNavigationHubState<DashboardPage> {
+///   _DashboardPageState() : super(() => {
+///     0: NavigationTab.tab(title: 'Home', page: HomeTab(), icon: Icon(Icons.home_outlined)),
 ///   });
 /// }
 /// ```
-abstract class WasnakerNavigationHub<T extends StatefulWidget>
+abstract class WasnakerNavigationHubState<T extends NyStatefulWidget>
     extends NavigationHub<T> {
-  WasnakerNavigationHub(super.pages);
+  WasnakerNavigationHubState(super.pages);
 
   @override
   NavigationHubLayout? layout(BuildContext context) {
-    if (AdaptiveLayout.isWide(context)) {
-      return NavigationHubLayout.topNav();
-    }
-    return NavigationHubLayout.bottomNav();
+    return AdaptiveLayout.isWide(context)
+        ? NavigationHubLayout.topNav()
+        : NavigationHubLayout.bottomNav();
   }
 }
