@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 ///   label: 'Inspections',
 ///   icon: Icon(Icons.search),
 ///   clientType: 'surveyor',
+///   requiredCapability: 'inspections:view',  // view OR view_own both pass
 ///   order: 1,
 ///   onTap: () => routeTo(InspectionsPage.path),
 /// ));
@@ -23,6 +24,12 @@ class DashboardNavItem {
   /// Minimum membership plan. null = all plans.
   final String? minMembership;
 
+  /// Perfex capability required. Format: 'feature:capability'.
+  /// e.g. 'inspections:view', 'quotations:create', 'rfqs:view'
+  /// For 'view': passes if user has 'view' OR 'view_own'.
+  /// null = always visible (no capability check).
+  final String? requiredCapability;
+
   /// Sort order — lower number appears first.
   final int order;
 
@@ -32,6 +39,7 @@ class DashboardNavItem {
     required this.onTap,
     this.clientType,
     this.minMembership,
+    this.requiredCapability,
     this.order = 99,
   });
 }

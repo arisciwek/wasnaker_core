@@ -44,21 +44,39 @@ class DashboardRegistry {
     }).toList();
   }
 
+  /// Returns nav items filtered by [clientType], [membership], and [capabilities].
+  ///
+  /// [capabilities] = Map from Perfex auth response:
+  /// e.g. {'inspections': ['view_own'], 'equipment': ['view', 'create']}
   static List<DashboardNavItem> navsFor({
     required String clientType,
     String membership = 'free',
+    Map<String, List<String>> capabilities = const {},
   }) {
     final level = _membershipLevels[membership] ?? 0;
     return _navItems.where((item) {
+      // actor type
       if (item.clientType != null && item.clientType != clientType) return false;
+      // membership
       if (item.minMembership != null) {
         if (level < (_membershipLevels[item.minMembership] ?? 0)) return false;
+      }
+      // capability
+      if (item.requiredCapability != null) {
+        final parts    = item.requiredCapability!.split(':');
+        final feature  = parts[0];
+        final cap      = parts.length > 1 ? parts[1] : 'view';
+        final userCaps = capabilities[feature] ?? [];
+        if (cap == 'view') {
+          // view OR view_own both satisfy a 'view' requirement
+          if (!userCaps.contains('view') && !userCaps.contains('view_own')) return false;
+        } else {
+          if (!userCaps.contains(cap)) return false;
+        }
       }
       return true;
     }).toList();
   }
-
-  // ── Helpers ───────────────────────────────────────────────────────────────
 
   static void clear() {
     _stats.clear();
