@@ -1,16 +1,15 @@
 import 'package:nylo_framework/nylo_framework.dart';
 
 /// Base API service for all Wasnaker actor apps.
-/// Sets shared headers and provides auth token injection point.
+/// - baseUrl reads API_BASE_URL from .env
+/// - Subclasses inject X-Api-Key via baseOptions and Bearer token via interceptor
 abstract class WasnakerApiService extends NyApiService {
-  WasnakerApiService({required super.decoders, super.baseOptions});
+  WasnakerApiService({
+    required super.decoders,
+    super.baseOptions,
+    super.useNetworkLogger,
+  });
 
-  Map<String, dynamic> get headers => {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      };
-
-  /// Override in actor app services to inject bearer token.
-  Map<String, dynamic> get authHeaders => {};
+  @override
+  String get baseUrl => getEnv('API_BASE_URL');
 }
