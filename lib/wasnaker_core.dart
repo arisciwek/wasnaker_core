@@ -6,6 +6,7 @@ export 'src/networking/wasnaker_api_service.dart';
 export 'src/widgets/adaptive_layout.dart';
 export 'src/navigation/wasnaker_navigation_hub.dart';
 export 'src/icons/fa_icon_mapper.dart';
+export 'src/libraries/app_table.dart';
 export 'src/helpers/admin_helper.dart';
 export 'src/helpers/general_helper.dart';
 export 'src/helpers/settings_helper.dart';
