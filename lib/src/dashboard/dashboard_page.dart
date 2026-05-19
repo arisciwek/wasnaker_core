@@ -67,7 +67,7 @@ class _DashboardPageState extends NyPage<DashboardPage>
         bottom: TabBar(
           controller: _tabController,
           labelColor: Theme.of(context).colorScheme.primary,
-          unselectedLabelColor: Colors.grey.shade600,
+          unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
           indicatorColor: Theme.of(context).colorScheme.primary,
           tabs: const [
             Tab(icon: Icon(Icons.bar_chart_outlined), text: 'Statistik'),
@@ -88,15 +88,23 @@ class _DashboardPageState extends NyPage<DashboardPage>
   // ── Mobile — AppBar + Statistik + FAB ─────────────────────────────────────
 
   Widget _mobileLayout(BuildContext context) {
+    final hasNavItems = DashboardRegistry.navsFor(
+      clientType: _clientType,
+      membership: _membership,
+      capabilities: _capabilities,
+    ).isNotEmpty;
+
     return Scaffold(
       appBar: AppBar(
         title: _UserInfo(name: _userName, subtitle: _subtitle),
       ),
       body: _StatistikTab(clientType: _clientType, membership: _membership),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _showNavBottomSheet(context, _capabilities),
-        child: const Icon(Icons.grid_view_rounded),
-      ),
+      floatingActionButton: hasNavItems
+          ? FloatingActionButton(
+              onPressed: () => _showNavBottomSheet(context, _capabilities),
+              child: const Icon(Icons.grid_view_rounded),
+            )
+          : null,
     );
   }
 
@@ -143,7 +151,7 @@ class _UserInfo extends StatelessWidget {
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
-                  ?.copyWith(color: Colors.grey.shade500)),
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant)),
       ],
     );
   }
@@ -233,9 +241,9 @@ class _NavigasiBottomSheet extends StatelessWidget {
         clientType: clientType, membership: membership, capabilities: capabilities);
 
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
       ),
       child: CustomScrollView(
         controller: scrollController,
@@ -247,7 +255,7 @@ class _NavigasiBottomSheet extends StatelessWidget {
                 Container(
                   width: 40, height: 4,
                   decoration: BoxDecoration(
-                    color: Colors.grey.shade300,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(80),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -296,7 +304,7 @@ class _NavCard extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.grey.shade200),
+          border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
