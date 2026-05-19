@@ -2,20 +2,28 @@ import 'package:flutter/material.dart';
 
 /// A navigation shortcut registered by a module into the Dashboard Navigasi tab.
 ///
+/// [iconBuilder] is called lazily at render time — safe to read Auth.data() inside.
+///
 /// Example:
 /// ```dart
 /// DashboardRegistry.registerNav(DashboardNavItem(
 ///   label: 'Inspections',
-///   icon: Icon(Icons.search),
+///   iconBuilder: () {
+///     final icons = Auth.data()?['staff']?['feature_icons'] ?? {};
+///     return FaIconMapper.fromClass(icons['inspections'] ?? 'fa-solid fa-file-invoice');
+///   },
 ///   clientType: 'surveyor',
-///   requiredCapability: 'inspections:view',  // view OR view_own both pass
+///   requiredCapability: 'inspections:view',
 ///   order: 1,
 ///   onTap: () => routeTo(InspectionsPage.path),
 /// ));
 /// ```
 class DashboardNavItem {
   final String label;
-  final Widget icon;
+
+  /// Lazy icon builder — called at render time, not at registration time.
+  final Widget Function() iconBuilder;
+
   final VoidCallback onTap;
 
   /// Actor type filter. null = all actors.
@@ -25,9 +33,8 @@ class DashboardNavItem {
   final String? minMembership;
 
   /// Perfex capability required. Format: 'feature:capability'.
-  /// e.g. 'inspections:view', 'quotations:create', 'rfqs:view'
   /// For 'view': passes if user has 'view' OR 'view_own'.
-  /// null = always visible (no capability check).
+  /// null = always visible.
   final String? requiredCapability;
 
   /// Sort order — lower number appears first.
@@ -35,7 +42,7 @@ class DashboardNavItem {
 
   const DashboardNavItem({
     required this.label,
-    required this.icon,
+    required this.iconBuilder,
     required this.onTap,
     this.clientType,
     this.minMembership,

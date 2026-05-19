@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   nylo_framework: ^7.1.17
   flutter_modular: ^6.4.1
+  font_awesome_flutter: ^11.0.0
 
 dev_dependencies:
   flutter_test:

@@ -270,7 +270,7 @@ class _NavigasiBottomSheet extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
             sliver: SliverGrid(
               delegate: SliverChildBuilderDelegate(
-                (_, i) => _NavCard(item: items[i]),
+                (_, i) => _NavCard(item: items[i], dismissOnTap: true),
                 childCount: items.length,
               ),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -291,13 +291,14 @@ class _NavigasiBottomSheet extends StatelessWidget {
 
 class _NavCard extends StatelessWidget {
   final dynamic item;
-  const _NavCard({required this.item});
+  final bool dismissOnTap;
+  const _NavCard({required this.item, this.dismissOnTap = false});
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.pop(context);
+        if (dismissOnTap) Navigator.pop(context);
         item.onTap();
       },
       borderRadius: BorderRadius.circular(12),
@@ -309,7 +310,7 @@ class _NavCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            item.icon,
+            item.iconBuilder(),   // lazy — reads Auth.data() at render time
             const SizedBox(height: 6),
             Text(item.label,
                 textAlign: TextAlign.center,
