@@ -37,7 +37,8 @@ class _DashboardPageState extends NyPage<DashboardPage>
 
   Map? get _staff      => Auth.data()?['staff'];
   String get _clientType => _staff?['client_type'] ?? '';
-  String get _membership => 'free';
+  String get _membership =>
+      Auth.data()?['staff']?['membership']?['plan'] ?? 'free';
 
   Map<String, List<String>> get _capabilities {
     final raw = _staff?['capabilities'];
