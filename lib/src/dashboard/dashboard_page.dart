@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nylo_framework/nylo_framework.dart';
 import '../widgets/adaptive_layout.dart';
+import '../icons/fa_icon_mapper.dart';
 import 'dashboard_registry.dart';
 
 /// Dashboard page — adaptive layout.
@@ -40,10 +41,11 @@ class _DashboardPageState extends NyPage<DashboardPage>
   String get _membership =>
       Auth.data()?['staff']?['membership']?['plan'] ?? 'free';
 
-  Map<String, List<String>> get _capabilities {
-    final raw = _staff?['capabilities'];
-    if (raw == null || raw is! Map) return {};
-    return raw.map((k, v) => MapEntry(k.toString(), List<String>.from(v)));
+  /// Reads menu_items directly from Perfex JWT response — always fresh.
+  List<Map> get _menuItems {
+    final raw = _staff?['menu_items'];
+    if (raw == null || raw is! List) return [];
+    return List<Map>.from(raw);
   }
 
   String get _userName =>
@@ -79,7 +81,7 @@ class _DashboardPageState extends NyPage<DashboardPage>
         controller: _tabController,
         children: [
           _StatistikTab(clientType: _clientType, membership: _membership),
-          _NavigasiTab(clientType: _clientType, membership: _membership, capabilities: _capabilities, columns: 5),
+          _NavigasiTab(items: _menuItems, columns: 5),
         ],
       ),
     );
@@ -88,27 +90,22 @@ class _DashboardPageState extends NyPage<DashboardPage>
   // ── Mobile — AppBar + Statistik + FAB ─────────────────────────────────────
 
   Widget _mobileLayout(BuildContext context) {
-    final hasNavItems = DashboardRegistry.navsFor(
-      clientType: _clientType,
-      membership: _membership,
-      capabilities: _capabilities,
-    ).isNotEmpty;
-
+    final items = _menuItems;
     return Scaffold(
       appBar: AppBar(
         title: _UserInfo(name: _userName, subtitle: _subtitle),
       ),
       body: _StatistikTab(clientType: _clientType, membership: _membership),
-      floatingActionButton: hasNavItems
+      floatingActionButton: items.isNotEmpty
           ? FloatingActionButton(
-              onPressed: () => _showNavBottomSheet(context, _capabilities),
+              onPressed: () => _showNavBottomSheet(context, items),
               child: const Icon(Icons.grid_view_rounded),
             )
           : null,
     );
   }
 
-  void _showNavBottomSheet(BuildContext context, Map<String, List<String>> capabilities) {
+  void _showNavBottomSheet(BuildContext context, List<Map> items) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -118,9 +115,7 @@ class _DashboardPageState extends NyPage<DashboardPage>
         minChildSize: 0.3,
         maxChildSize: 0.9,
         builder: (_, scrollController) => _NavigasiBottomSheet(
-          clientType: _clientType,
-          membership: _membership,
-          capabilities: capabilities,
+          items: items,
           scrollController: scrollController,
         ),
       ),
@@ -187,21 +182,12 @@ class _StatistikTab extends StatelessWidget {
 // ── Navigasi tab (web) ────────────────────────────────────────────────────────
 
 class _NavigasiTab extends StatelessWidget {
-  final String clientType;
-  final String membership;
-  final Map<String, List<String>> capabilities;
+  final List<Map> items;
   final int columns;
-  const _NavigasiTab(
-      {required this.clientType,
-      required this.membership,
-      this.capabilities = const {},
-      this.columns = 4});
+  const _NavigasiTab({required this.items, this.columns = 4});
 
   @override
   Widget build(BuildContext context) {
-    final items = DashboardRegistry.navsFor(
-        clientType: clientType, membership: membership, capabilities: capabilities);
-
     if (items.isEmpty) {
       return const Center(child: Text('No navigation items'));
     }
@@ -223,23 +209,16 @@ class _NavigasiTab extends StatelessWidget {
 // ── Navigasi BottomSheet (mobile FAB) ─────────────────────────────────────────
 
 class _NavigasiBottomSheet extends StatelessWidget {
-  final String clientType;
-  final String membership;
-  final Map<String, List<String>> capabilities;
+  final List<Map> items;
   final ScrollController scrollController;
 
   const _NavigasiBottomSheet({
-    required this.clientType,
-    required this.membership,
+    required this.items,
     required this.scrollController,
-    this.capabilities = const {},
   });
 
   @override
   Widget build(BuildContext context) {
-    final items = DashboardRegistry.navsFor(
-        clientType: clientType, membership: membership, capabilities: capabilities);
-
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -290,16 +269,19 @@ class _NavigasiBottomSheet extends StatelessWidget {
 // ── Nav card ──────────────────────────────────────────────────────────────────
 
 class _NavCard extends StatelessWidget {
-  final dynamic item;
+  final Map item;
   final bool dismissOnTap;
   const _NavCard({required this.item, this.dismissOnTap = false});
 
   @override
   Widget build(BuildContext context) {
+    final label = item['label'] as String? ?? '';
+    final icon  = item['icon']  as String? ?? 'fa-solid fa-circle';
+
     return InkWell(
       onTap: () {
         if (dismissOnTap) Navigator.pop(context);
-        item.onTap();
+        // onTap routing — module sets this via DashboardNavItem in full arch
       },
       borderRadius: BorderRadius.circular(12),
       child: Container(
@@ -310,9 +292,9 @@ class _NavCard extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            item.iconBuilder(),   // lazy — reads Auth.data() at render time
+            FaIconMapper.fromClass(icon),
             const SizedBox(height: 6),
-            Text(item.label,
+            Text(label,
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontSize: 11)),
           ],
